@@ -1,6 +1,6 @@
 # TextMeshAnimator
 
-Adds basic shake and wave animation tags to Unity TextMesh. This is a basic proof of concept as I found it pretty hard to find any decent documentation on a way to achieve this.
+Adds basic shake and wave animation tags to Unity TextMesh. This is a proof of concept as I found it pretty hard to find any decent documentation on a way to achieve this.
 
 ![Text](https://raw.githubusercontent.com/Abban/TextMeshAnimator/master/text.gif)
 
