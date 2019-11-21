@@ -23,11 +23,13 @@ namespace BBX.Dialogue.GUI
 
         /// <summary>
         /// 1. Parse text and find characters with tags
-        /// 2. Start displaying text
+        /// 2. Hide all the text
+        /// 3. Start displaying text
         /// </summary>
         private void Start()
         {
             Parse();
+            _textMeshProText.alpha = 0;
             StartCoroutine(RunText());
         }
 
@@ -56,21 +58,6 @@ namespace BBX.Dialogue.GUI
 
         
         /// <summary>
-        /// Hide all characters by putting their alpha to 0
-        /// </summary>
-        private void Hide()
-        {
-            var textInfo = TMProText.textInfo;
-            var characterCount = textInfo.characterCount;
-
-            for (var i = 0; i < characterCount; i++)
-            {
-                Alpha(textInfo, i, 0);
-            }
-        }
-
-        
-        /// <summary>
         /// Run the text, this increases the visible characters and maxes their alpha one by one
         /// </summary>
         /// <returns></returns>
@@ -80,7 +67,8 @@ namespace BBX.Dialogue.GUI
             var totalVisibleCharacters = textInfo.characterCount;
             _visibleCount = 0;
 
-            Hide();
+            // Wait a frame because parent layout elements do something to the first character
+            yield return new WaitForEndOfFrame();
 
             while (true)
             {
@@ -122,6 +110,8 @@ namespace BBX.Dialogue.GUI
         /// <param name="value"></param>
         private void Alpha(TMP_TextInfo textInfo, int index, byte value)
         {
+            if (!textInfo.characterInfo[index].isVisible) return;
+
             // Get the index of the material used by the current character.
             var materialIndex = textInfo.characterInfo[index].materialReferenceIndex;
 
@@ -131,10 +121,10 @@ namespace BBX.Dialogue.GUI
             // Get the vertex colors of the mesh used by this text element (character or sprite).
             var newVertexColors = textInfo.meshInfo[materialIndex].colors32;
 
-            newVertexColors[vertexIndex + 0].a = value;
-            newVertexColors[vertexIndex + 1].a = value;
-            newVertexColors[vertexIndex + 2].a = value;
-            newVertexColors[vertexIndex + 3].a = value;
+            for (byte corner = 0; corner < 4; corner++)
+            {
+                newVertexColors[vertexIndex + corner].a = value;
+            }
 
             // New function which pushes (all) updated vertex data to the appropriate meshes when using either the Mesh Renderer or CanvasRenderer.
             TMProText.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
@@ -156,7 +146,7 @@ namespace BBX.Dialogue.GUI
             {
                 if (i >= _visibleCount) break;
 
-                if (textInfo.characterInfo[i].character == ' ') continue;
+                if (!textInfo.characterInfo[i].isVisible) continue;
 
                 // Get the index of the material used by the current character.
                 var materialIndex = textInfo.characterInfo[i].materialReferenceIndex;
